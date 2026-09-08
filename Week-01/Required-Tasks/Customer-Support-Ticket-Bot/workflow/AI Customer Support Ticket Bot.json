@@ -1,0 +1,775 @@
+{
+  "name": "AI Customer Support Ticket Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -2144,
+        -112
+      ],
+      "id": "8bc6d8e6-6536-4cfc-a7f3-5c3f58595ba5",
+      "name": "Receive Customer Message",
+      "webhookId": "ab88a67e-a465-4b3a-a3bf-8bee046d074b",
+      "credentials": {
+        "telegramApi": {
+          "id": "PaShKHjTghYV2VUP",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:11434/api/chat",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gemma4:e2b\",\n  \"stream\": false,\n  \"format\": \"json\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a customer support intent classifier. Classify the user's message into exactly one of these categories: billing, technical, general. Return ONLY valid JSON in exactly this structure: {\\\"category\\\":\\\"billing\\\"}. The category value must be billing, technical, or general. Do not include explanations or any other text.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{$json.message.text}}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -1728,
+        -240
+      ],
+      "id": "1eaf602a-c5c7-43e2-a61c-211f3e6c476d",
+      "name": "AI Intent Classifier",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nfor (const item of items) {\n  try {\n    const parsed = JSON.parse(item.json.message.content);\n    const allowed = [\"billing\", \"technical\", \"general\"];\n\n    item.json.category = allowed.includes(parsed.category)\n      ? parsed.category\n      : \"fallback\";\n  } catch (error) {\n    item.json.category = \"fallback\";\n  }\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1472,
+        -128
+      ],
+      "id": "091f89c8-1f4d-4ea3-87c3-7dd3e3eb6237",
+      "name": "Parse AI Category"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "11LbunA987fSkuVZhq3JCzxySYb1_Am4A_Ndcacol1Rs",
+          "mode": "list",
+          "cachedResultName": "Support Tickets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11LbunA987fSkuVZhq3JCzxySYb1_Am4A_Ndcacol1Rs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11LbunA987fSkuVZhq3JCzxySYb1_Am4A_Ndcacol1Rs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestap": "={{ $now.toISO() }}",
+            "user": "={{ $('Receive Customer Message').item.json.message.from.username || $('Receive Customer Message').item.json.message.from.first_name }}",
+            "category": "={{ $('Parse AI Category').item.json.category }}",
+            "original_message": "={{ $('Receive Customer Message').item.json.message.text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestap",
+              "displayName": "timestap",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user",
+              "displayName": "user",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "original_message",
+              "displayName": "original_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1280,
+        -128
+      ],
+      "id": "2aee5174-a5cf-495a-90a3-bc4b60240ac1",
+      "name": "Log Support Ticket",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dN9knE3GfX6hhJMv",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.category}}",
+                    "rightValue": "billing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0db01818-d025-4e43-8a43-c6d0026a6565"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Billing"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ccc7ee56-3275-4238-88be-8aab401d7227",
+                    "leftValue": "={{$json.category}}",
+                    "rightValue": "technical",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Technical"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8799138d-1f7d-4a7d-9c86-60b89f73cda7",
+                    "leftValue": "={{$json.category}}",
+                    "rightValue": "general",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "General"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1120,
+        -160
+      ],
+      "id": "87135c68-53a1-493b-ab3c-2c885a4da3cf",
+      "name": "Route by Category"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Receive Customer Message').item.json.message.chat.id }}",
+        "text": "Thanks for contacting support. Your billing request has been received. Our billing team will review your issue.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -848,
+        -480
+      ],
+      "id": "028853aa-85f0-45b0-b7c2-cf7a4eaec3ac",
+      "name": "Billing Response",
+      "webhookId": "0a20c550-ccfe-4525-9868-252fe16edaa8",
+      "credentials": {
+        "telegramApi": {
+          "id": "PaShKHjTghYV2VUP",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Receive Customer Message').item.json.message.chat.id }}",
+        "text": "Thanks for contacting support. Your technical issue has been received. Our technical team will review it.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -672,
+        -320
+      ],
+      "id": "8009fb18-e349-44b2-9a9e-90e8fc7b54fe",
+      "name": "Technical Response",
+      "webhookId": "582f900a-2aba-4083-8d22-886190ca7a9a",
+      "credentials": {
+        "telegramApi": {
+          "id": "PaShKHjTghYV2VUP",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.frankfurter.app/latest?from=USD&to=EUR",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -784,
+        -16
+      ],
+      "id": "570af916-04e7-4bce-a3e0-a046ada89097",
+      "name": "Fetch Exchange Rate API",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Receive Customer Message').item.json.message.chat.id }}",
+        "text": "=Thanks for contacting support!  Current USD → EUR exchange rate: {{ $json.rates.EUR }}  1 USD = {{ $json.rates.EUR }} EUR",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        -32
+      ],
+      "id": "32c8663e-9026-42a3-abf6-f18d5ccf4df1",
+      "name": "General Response",
+      "webhookId": "ac3f8929-0094-4e63-bc02-43a1d2f06942",
+      "credentials": {
+        "telegramApi": {
+          "id": "PaShKHjTghYV2VUP",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Receive Customer Message').item.json.message.chat.id }}",
+        "text": "Sorry, I couldn't understand your request clearly. Please describe your issue in a little more detail and try again.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1072,
+        176
+      ],
+      "id": "3f9f7a8a-cd0c-46f4-8aa5-193eb79274b6",
+      "name": "Fallback Response",
+      "webhookId": "f363ba1f-bfeb-49f1-9631-83bcc4723b3e",
+      "credentials": {
+        "telegramApi": {
+          "id": "PaShKHjTghYV2VUP",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Receive Customer Message').item.json.message.chat.id }}",
+        "text": "Sorry, our external service is temporarily unavailable. Please try again later.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -336,
+        160
+      ],
+      "id": "aef2c5d0-fa9b-4a4b-a54a-58ce759cb04b",
+      "name": "API Error Response",
+      "webhookId": "02f6b6b6-1b08-4978-afd2-f4882bc73665",
+      "credentials": {
+        "telegramApi": {
+          "id": "PaShKHjTghYV2VUP",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Receive Customer Message').item.json.message.chat.id }}",
+        "text": "Sorry, our AI support service is temporarily unavailable. Please try again in a moment.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1360,
+        48
+      ],
+      "id": "5c55eb55-f358-4e70-874e-51a3140580a4",
+      "name": "AI Service Error Response",
+      "webhookId": "61a98d05-19dc-4948-a65c-fc3bfcfdc94a",
+      "credentials": {
+        "telegramApi": {
+          "id": "PaShKHjTghYV2VUP",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "11LbunA987fSkuVZhq3JCzxySYb1_Am4A_Ndcacol1Rs",
+          "mode": "list",
+          "cachedResultName": "Support Tickets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11LbunA987fSkuVZhq3JCzxySYb1_Am4A_Ndcacol1Rs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11LbunA987fSkuVZhq3JCzxySYb1_Am4A_Ndcacol1Rs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestap": "={{ $now.toISO() }}",
+            "user": "={{ $('Receive Customer Message').item.json.message.from.username || $('Receive Customer Message').item.json.message.from.first_name }}",
+            "category": "fallback",
+            "original_message": "={{ $('Receive Customer Message').item.json.message.text || '[non-text message]' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestap",
+              "displayName": "timestap",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user",
+              "displayName": "user",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "original_message",
+              "displayName": "original_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1616,
+        48
+      ],
+      "id": "17c6d0fd-2ad2-4be5-a2fd-7a03fae3db6a",
+      "name": "Log AI Failure Ticket",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dN9knE3GfX6hhJMv",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d9d1ee09-74dd-46cc-86a0-8afbe6f8de06",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "0dbf47e7-7d84-4e83-8345-93a3376dc4d9",
+              "leftValue": "={{ /[\\p{L}\\p{N}]/u.test($json.message.text || '') }}",
+              "rightValue": "={{ true }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1920,
+        -112
+      ],
+      "id": "920b1ad9-1c52-468b-b8b0-3dbed92f522c",
+      "name": "Check Text Input"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Receive Customer Message').item.json.message.chat.id }}",
+        "text": "Please send your support request as a text message.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1728,
+        224
+      ],
+      "id": "799c85ea-aad7-4cec-a2c9-7c744a402e10",
+      "name": "Invalid Input Response",
+      "webhookId": "78b37ebb-1a1e-4c60-8f56-7c31bd31fdf1",
+      "credentials": {
+        "telegramApi": {
+          "id": "PaShKHjTghYV2VUP",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "INPUT VALIDATION\n\nReceives Telegram messages.\n\nRejects empty, non-text, and emoji-only input before AI processing.",
+        "height": 208,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2096,
+        48
+      ],
+      "id": "5d40a6a7-f220-446e-8228-c954bda43955",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "LOCAL AI CLASSIFICATION\n\nLocal Gemma 4 via Ollama classifies requests as:\n\n• billing\n• technical\n• general\n\nInvalid AI output uses fallback handling.",
+        "height": 272,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1616,
+        -496
+      ],
+      "id": "bc0eedab-bacb-447c-8473-1316830d4435",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "LOGGING & ROUTING\n\nLogs each ticket to Google Sheets.\n\nSwitch routes using the AI-assigned category.",
+        "height": 176,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1264,
+        -352
+      ],
+      "id": "dc44fa82-6d3b-46b4-a6a4-940c52cede23",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "EXTERNAL API & ERROR HANDLING\n\nGeneral requests call a live exchange-rate API.\n\nRetries failures and returns a graceful error response if unavailable.",
+        "height": 208,
+        "width": 304,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        128
+      ],
+      "id": "39d75d68-8e5a-400a-8550-6fd85d4e4c2a",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "chatId": "8695353492",
+        "text": "=🚨 NEW TECHNICAL SUPPORT TICKET  User: {{ $('Receive Customer Message').item.json.message.from.username || $('Receive Customer Message').item.json.message.from.first_name }}  Message: {{ $('Receive Customer Message').item.json.message.text }}  AI Category: {{ $('Parse AI Category').item.json.category }}  Time: {{ $now.toISO() }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -640,
+        -144
+      ],
+      "id": "8398c2fe-cce6-47f0-a314-883d6e075141",
+      "name": "Admin Technical Alert",
+      "webhookId": "4236908a-7831-4fe6-a9f6-8f1ddf5381cb",
+      "credentials": {
+        "telegramApi": {
+          "id": "PaShKHjTghYV2VUP",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Receive Customer Message": {
+      "main": [
+        [
+          {
+            "node": "Check Text Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Intent Classifier": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Category",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log AI Failure Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Category": {
+      "main": [
+        [
+          {
+            "node": "Log Support Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Support Ticket": {
+      "main": [
+        [
+          {
+            "node": "Route by Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Category": {
+      "main": [
+        [
+          {
+            "node": "Billing Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Technical Response",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Admin Technical Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Exchange Rate API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fallback Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Exchange Rate API": {
+      "main": [
+        [
+          {
+            "node": "General Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "API Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log AI Failure Ticket": {
+      "main": [
+        [
+          {
+            "node": "AI Service Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Text Input": {
+      "main": [
+        [
+          {
+            "node": "AI Intent Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Invalid Input Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d2b92508-1a57-4788-964f-9268ca0163e3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f5a2b154552415ad9738c310f77310d6aa76f414793ba60e61b90bf9e609064"
+  },
+  "nodeGroups": [],
+  "id": "DT35bewSWRzxCMUt",
+  "tags": []
+}
