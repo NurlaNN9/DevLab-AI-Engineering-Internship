@@ -1,0 +1,509 @@
+{
+  "name": "Daily Personal Digest Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast?latitude=40.4093&longitude=49.8671&current=temperature_2m,weather_code,is_day&timezone=Asia%2FBaku",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        208,
+        -160
+      ],
+      "id": "64f61ac2-933b-4a87-882d-aa1511c59d0c",
+      "name": "Fetch Baku Weather"
+    },
+    {
+      "parameters": {
+        "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        16
+      ],
+      "id": "d84acb53-ee1a-4765-9a1b-17e3b7470766",
+      "name": "Fetch Latest News"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1SfqFOj1nr406ECkzeM8mpAoGFfsC6QByHwh-geqNWzs",
+          "mode": "list",
+          "cachedResultName": "Daily Digest To-Do",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SfqFOj1nr406ECkzeM8mpAoGFfsC6QByHwh-geqNWzs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SfqFOj1nr406ECkzeM8mpAoGFfsC6QByHwh-geqNWzs/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        192
+      ],
+      "id": "a231723a-b796-4ae5-9ebf-ccad71dd957b",
+      "name": "Read Daily To-Do",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ObVG3eU4CnvbAbiV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        432,
+        16
+      ],
+      "id": "9bec548a-eaaf-4d8b-b5ca-ae336ef8d74c",
+      "name": "Keep Latest Headline"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ed1b6e07-f30e-4e66-b691-3eddacde401c",
+              "name": "message",
+              "value": "=☀️ *Daily Personal Digest*\n\n🌤 *Weather in Baku*\nTemperature: {{ $json.current.temperature_2m }}°C\nWeather code: {{ $json.current.weather_code }}\n\n📰 *Latest News*\n{{ $json.title }}\n🔗 {{ $json.link }}\n\n✅ *Today's To-Do*\n{{ $json.task }}\nStatus: {{ $json.status }}\n\n💡 *Motivational Quote*\n“{{ $json.q }}”\n— {{ $json.a }}\n\nHave a productive day! 🚀",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        880,
+        0
+      ],
+      "id": "d7c25841-e06f-4631-946d-b35900534015",
+      "name": "Format Daily Digest"
+    },
+    {
+      "parameters": {
+        "chatId": "8695353492",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1104,
+        0
+      ],
+      "id": "719716da-6269-44a0-a75c-bb79ba1879b9",
+      "name": "Send Daily Digest",
+      "webhookId": "4b6c3efe-101b-4989-9b18-16a1a45e22dd",
+      "credentials": {
+        "telegramApi": {
+          "id": "1u0HnmyVyH2e4k9z",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://zenquotes.io/api/random",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        208,
+        400
+      ],
+      "id": "27361be3-f6c9-4fb2-a64f-6d7ea72fe68f",
+      "name": "Fetch Motivational Quote"
+    },
+    {
+      "parameters": {
+        "url": "={{\n(() => {\n  const code = $json.current.weather_code;\n  const night = $json.current.is_day === 0;\n\n  const icons = {\n    0: night\n      ? 'https://www.xweather.com/docs/_next/static/media/clearn.8d9b0eb7.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/clear.c69d5b68.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    1: night\n      ? 'https://www.xweather.com/docs/_next/static/media/fairn.7e024255.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/fair.456bb97e.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    2: night\n      ? 'https://www.xweather.com/docs/_next/static/media/pcloudyn.9ba7c9b8.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/pcloudy.7f48949e.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    3: night\n      ? 'https://www.xweather.com/docs/_next/static/media/cloudyn.7c3343f2.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/cloudy.7c3343f2.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    45: night\n      ? 'https://www.xweather.com/docs/_next/static/media/fogn.86621e8c.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/fog.86621e8c.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    48: night\n      ? 'https://www.xweather.com/docs/_next/static/media/fogn.86621e8c.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/fog.86621e8c.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    51: night\n      ? 'https://www.xweather.com/docs/_next/static/media/drizzlen.f989529a.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/drizzle.f989529a.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    53: night\n      ? 'https://www.xweather.com/docs/_next/static/media/drizzlen.f989529a.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/drizzle.f989529a.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    55: night\n      ? 'https://www.xweather.com/docs/_next/static/media/drizzlen.f989529a.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/drizzle.f989529a.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    56: night\n      ? 'https://www.xweather.com/docs/_next/static/media/freezingrainn.113b25f9.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/freezingrain.113b25f9.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    57: night\n      ? 'https://www.xweather.com/docs/_next/static/media/freezingrainn.113b25f9.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/freezingrain.113b25f9.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    61: night\n      ? 'https://www.xweather.com/docs/_next/static/media/rainn.9903b838.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/rain.9903b838.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    63: night\n      ? 'https://www.xweather.com/docs/_next/static/media/rainn.9903b838.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/rain.9903b838.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    65: night\n      ? 'https://www.xweather.com/docs/_next/static/media/showersn.382bf808.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/showers.382bf808.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    66: night\n      ? 'https://www.xweather.com/docs/_next/static/media/freezingrainn.113b25f9.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/freezingrain.113b25f9.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    67: night\n      ? 'https://www.xweather.com/docs/_next/static/media/freezingrainn.113b25f9.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/freezingrain.113b25f9.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    71: night\n      ? 'https://www.xweather.com/docs/_next/static/media/flurriesn.77f2e863.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/flurries.77f2e863.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    73: night\n      ? 'https://www.xweather.com/docs/_next/static/media/snown.ce6a5c0c.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/snow.ce6a5c0c.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    75: night\n      ? 'https://www.xweather.com/docs/_next/static/media/snown.ce6a5c0c.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/snow.ce6a5c0c.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    77: night\n      ? 'https://www.xweather.com/docs/_next/static/media/snowshowersn.bf4916af.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/snowshowers.bf4916af.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    80: night\n      ? 'https://www.xweather.com/docs/_next/static/media/showersn.382bf808.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/showers.382bf808.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    81: night\n      ? 'https://www.xweather.com/docs/_next/static/media/showersn.382bf808.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/showers.382bf808.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    82: night\n      ? 'https://www.xweather.com/docs/_next/static/media/showersn.382bf808.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/showers.382bf808.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    85: night\n      ? 'https://www.xweather.com/docs/_next/static/media/snowshowersn.bf4916af.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/snowshowers.bf4916af.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    86: night\n      ? 'https://www.xweather.com/docs/_next/static/media/snowshowersn.bf4916af.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/snowshowers.bf4916af.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    95: night\n      ? 'https://www.xweather.com/docs/_next/static/media/tstormn.e35a6ef2.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/tstorm.e35a6ef2.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    96: night\n      ? 'https://www.xweather.com/docs/_next/static/media/tstormsn.f073ab72.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/tstorms.f073ab72.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf',\n\n    99: night\n      ? 'https://www.xweather.com/docs/_next/static/media/tstormsn.f073ab72.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n      : 'https://www.xweather.com/docs/_next/static/media/tstorms.f073ab72.png?dpl=dpl_4RXMf55TzmS9ti2sRezLiP4PHaLf'\n  };\n\n  return icons[code] || icons[3];\n})()\n}}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        432,
+        -368
+      ],
+      "id": "a87fad35-529f-4502-91d2-4ecaf1c091a3",
+      "name": "Fetch Weather Image"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "06279973-028d-4629-9fd3-c64c7d73250d",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/digest",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        272
+      ],
+      "id": "60e3429c-0617-4918-b787-96af7880523b",
+      "name": "Check /digest Command"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 4,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        656,
+        0
+      ],
+      "id": "d70c4229-0022-401b-8d2d-498a846f81f0",
+      "name": "Merge Digest Data"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -272,
+        272
+      ],
+      "id": "f39e1e44-6fa1-45e2-ab7d-5634d922e4d2",
+      "name": "On-Demand Digest Trigger",
+      "webhookId": "f87edae0-aeb3-49a8-9ff8-747914055659",
+      "credentials": {
+        "telegramApi": {
+          "id": "1u0HnmyVyH2e4k9z",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "8695353492",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        624,
+        -368
+      ],
+      "id": "e4bb9cf2-2125-46ed-b70e-0b40a1374348",
+      "name": "Send Weather Image",
+      "webhookId": "2e996ea3-b2f2-4bc7-b3b6-2d1e75c6943d",
+      "credentials": {
+        "telegramApi": {
+          "id": "1u0HnmyVyH2e4k9z",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -272,
+        16
+      ],
+      "id": "0a7449d0-9f5e-4cea-8278-81cedabaef31",
+      "name": "Daily 08:00 Schedule"
+    },
+    {
+      "parameters": {
+        "content": "TRIGGERS\n\n• Runs automatically every day at 08:00\n• Timezone: Asia/Baku\n• /digest allows an on-demand run",
+        "height": 176,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        128
+      ],
+      "id": "ddab8546-5226-47dd-8cbe-a5d2131ef486",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "DATA SOURCES\n\n• Open-Meteo — Baku weather\n• BBC World RSS — latest headline\n• Google Sheets — daily to-do\n• ZenQuotes — motivational quote",
+        "height": 256,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -400
+      ],
+      "id": "ef925153-458e-47c0-9b33-a9453260a4d5",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "DIGEST PROCESSING\n\nAll data sources are merged into one item\nand formatted as a single Markdown digest\nfor Telegram.",
+        "height": 176,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        736,
+        208
+      ],
+      "id": "ae3c9197-029e-4f8e-905f-f5eb9256d1e2",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "TELEGRAM OUTPUT\n\n• Sends one formatted daily digest\n• Sends a dynamic weather image\n• Weather icons sourced from Xweather\n• Day/night icon selected automatically",
+        "height": 256,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -640
+      ],
+      "id": "18bb5993-d6ff-4dc9-bf41-9a3524398aac",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Fetch Latest News": {
+      "main": [
+        [
+          {
+            "node": "Keep Latest Headline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep Latest Headline": {
+      "main": [
+        [
+          {
+            "node": "Merge Digest Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Fetch Baku Weather": {
+      "main": [
+        [
+          {
+            "node": "Merge Digest Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Weather Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Daily To-Do": {
+      "main": [
+        [
+          {
+            "node": "Merge Digest Data",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Format Daily Digest": {
+      "main": [
+        [
+          {
+            "node": "Send Daily Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Motivational Quote": {
+      "main": [
+        [
+          {
+            "node": "Merge Digest Data",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Fetch Weather Image": {
+      "main": [
+        [
+          {
+            "node": "Send Weather Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check /digest Command": {
+      "main": [
+        [
+          {
+            "node": "Fetch Baku Weather",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Latest News",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read Daily To-Do",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Motivational Quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Digest Data": {
+      "main": [
+        [
+          {
+            "node": "Format Daily Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On-Demand Digest Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check /digest Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily 08:00 Schedule": {
+      "main": [
+        [
+          {
+            "node": "Fetch Baku Weather",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Latest News",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read Daily To-Do",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Motivational Quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Baku",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "437c7c9a-1fb6-446c-b0c0-b6a8cd8b4aea",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b1b0fd02aba1b67273027ec8d4abef5e82e50b15df665a330a998c14f4a9dd1e"
+  },
+  "nodeGroups": [],
+  "id": "wvJdWm7Rz9KlWEFR",
+  "tags": []
+}
