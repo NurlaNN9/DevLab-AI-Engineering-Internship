@@ -22,10 +22,12 @@ An automated personal digest workflow built with n8n and Telegram that delivers 
 - Motivational quote integration
 - Dynamic weather image/icon
 
-### Files
+### Project Files
 
-- [`OPTIONAL-TASK-01-DAILY-PERSONAL-DIGEST-BOT.md`](./OPTIONAL-TASK-01-DAILY-PERSONAL-DIGEST-BOT.md) — Original task requirements
-- [`Daily-Personal-Digest-Bot/`](./Daily-Personal-Digest-Bot/) — Complete implementation, workflow, documentation, and screenshots
+- [`Daily-Personal-Digest-Bot/`](./Daily-Personal-Digest-Bot/) — Complete project
+- [`Original Task Requirements`](./Daily-Personal-Digest-Bot/OPTIONAL-TASK-01-DAILY-PERSONAL-DIGEST-BOT.md) — Original task brief
+- [`Workflow`](./Daily-Personal-Digest-Bot/workflow/) — n8n workflow export and documentation
+- [`Screenshots`](./Daily-Personal-Digest-Bot/screenshots/) — Testing and implementation evidence
 
 ---
 
@@ -48,7 +50,9 @@ A Telegram FAQ bot that retrieves question/answer pairs from Google Sheets and u
 - Similarity threshold tuning for typo tolerance
 - Follow-up `/yes` and `/no` confirmation flow
 
-### Files
+### Project Files
 
-- [`OPTIONAL-TASK-02-FAQ-BOT-BACKED-BY-A-KNOWLEDGE-BASE-SPREADSHEET.md`](./OPTIONAL-TASK-02-FAQ-BOT-BACKED-BY-A-KNOWLEDGE-BASE-SPREADSHEET.md) — Original task requirements
-- [`FAQ-Bot/`](./FAQ-Bot/) — Complete implementation, workflow, documentation, and screenshots
+- [`FAQ-Bot/`](./FAQ-Bot/) — Complete project
+- [`Original Task Requirements`](./FAQ-Bot/OPTIONAL-TASK-02-FAQ-BOT-BACKED-BY-A-KNOWLEDGE-BASE-SPREADSHEET.md) — Original task brief
+- [`Workflow`](./FAQ-Bot/workflow/) — n8n workflow export and documentation
+- [`Screenshots`](./FAQ-Bot/screenshots/) — Testing and implementation evidence
