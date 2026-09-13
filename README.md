@@ -1,53 +1,128 @@
-# DevLab AI Engineering Internship
+# Week 01 — AI Automation with n8n
 
-This repository documents my work, projects, and practical assignments completed during the **DevLab AI Engineering Internship**.
+This directory contains the tasks, implementations, workflow exports, testing evidence, and documentation completed during **Week 01** of the DevLab AI Engineering Internship.
 
-The repository is organized by internship week. Each week contains required tasks, optional bonus tasks, workflow exports, screenshots, and technical documentation.
-
-## Repository Structure
+## Week 01 Structure
 
 ```text
-DevLab-AI-Engineering-Internship/
+Week-01/
 │
-├── Week-01/
-│   ├── Required-Tasks/
-│   └── Bonus-Tasks/
+├── Required-Tasks/
+│   └── Customer-Support-Ticket-Bot/
+│
+├── Bonus-Tasks/
+│   ├── Daily-Personal-Digest-Bot/
+│   └── FAQ-Bot/
 │
 └── README.md
 ```
 
-Additional weeks will be added as the internship progresses.
+## Required Task
 
-## Week 01
+### Customer Support Ticket Bot
 
-### Required Task
+An AI-powered customer support automation built with **n8n, Telegram, Ollama, Gemma 4, and Google Sheets**.
 
-**Customer Support Ticket Bot**
+The workflow:
 
-An AI-powered customer support automation built with **n8n, Telegram, Ollama, Gemma 4, Google Sheets, and external APIs**.
+- Receives customer messages through Telegram
+- Validates incoming user input
+- Uses a locally hosted **Gemma 4** model through **Ollama** for intent classification
+- Classifies requests into Billing, Technical, or General categories
+- Routes tickets dynamically based on the AI-generated category
+- Logs support tickets to Google Sheets
+- Sends category-specific Telegram responses
+- Uses a live external API for General requests
+- Handles invalid input, AI failures, and external API failures
+- Sends an admin notification for Technical tickets
 
-The system receives customer support requests through Telegram, uses a locally hosted AI model to classify each request, automatically routes tickets by category, logs them, and sends appropriate responses.
+The complete implementation is available in:
 
-### Bonus Tasks
+[`Required-Tasks/Customer-Support-Ticket-Bot/`](./Required-Tasks/Customer-Support-Ticket-Bot/)
 
-Optional Week 01 bonus tasks and their documentation will be added to the `Bonus-Tasks` directory as they are completed.
+---
 
-## Technologies
+## Bonus Tasks
+
+### Optional Task 01 — Daily Personal Digest Bot
+
+An automated Telegram digest workflow that combines multiple data sources into a single daily message.
+
+The workflow:
+
+- Runs automatically every morning
+- Uses **Asia/Baku** timezone
+- Retrieves current weather information
+- Retrieves a BBC World news headline
+- Reads to-do items from Google Sheets
+- Adds a motivational quote
+- Merges the data into one Telegram digest
+- Supports the `/digest` command for manual execution
+- Includes a dynamic weather image/icon
+
+The complete implementation is available in:
+
+[`Bonus-Tasks/Daily-Personal-Digest-Bot/`](./Bonus-Tasks/Daily-Personal-Digest-Bot/)
+
+---
+
+### Optional Task 02 — FAQ Bot Backed by a Knowledge-Base Spreadsheet
+
+A Telegram FAQ bot that retrieves answers from a Google Sheets knowledge base using generic text-similarity matching.
+
+The workflow:
+
+- Reads FAQ question/answer pairs from Google Sheets
+- Uses a hand-written **Levenshtein Distance** algorithm in JavaScript
+- Calculates similarity between incoming questions and stored FAQ questions
+- Selects the closest FAQ match
+- Uses a **0.60 similarity threshold**
+- Avoids guessing when the similarity score is below the threshold
+- Logs unanswered questions to Google Sheets
+- Sends matched answers or escalation messages through Telegram
+- Uses generic matching without question-specific hardcoded conditions
+
+Bonus functionality includes:
+
+- Live FAQ creation using the admin `/addfaq` command
+- Threshold tuning for typo tolerance
+- Follow-up confirmation using `/yes` and `/no`
+
+The complete implementation is available in:
+
+[`Bonus-Tasks/FAQ-Bot/`](./Bonus-Tasks/FAQ-Bot/)
+
+---
+
+## Week 01 Completed Work
+
+Week 01 includes:
+
+- **1 Required Task** — Customer Support Ticket Bot
+- **2 Optional Tasks** — Daily Personal Digest Bot and FAQ Bot
+- All required workflow functionality
+- Bonus features implemented for the optional tasks
+- Exported n8n workflow JSON files
+- Testing and execution evidence
+- Screenshots
+- Technical documentation
+- Resource references
+
+## Technologies Used
 
 - n8n
+- JavaScript
 - Docker
 - Ollama
 - Gemma 4
 - Telegram Bot API
 - Google Sheets API
 - REST APIs
-- Git & GitHub
+- Open-Meteo API
+- BBC RSS
+- ZenQuotes
+- Levenshtein Distance
 
-## Repository Goals
+---
 
-This repository serves as:
-
-- Documentation of my internship progress
-- A collection of completed AI Engineering assignments
-- Evidence of workflow implementation and testing
-- A technical portfolio of practical automation projects
+**DevLab AI Engineering Internship — Week 01**
