@@ -1,0 +1,707 @@
+{
+  "name": "FAQ Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -448,
+        0
+      ],
+      "id": "d1a456a2-1652-4a85-8719-33574b455c7b",
+      "name": "Telegram Trigger",
+      "webhookId": "f3dddd7e-f033-42d3-994f-fc024bd514b4",
+      "credentials": {
+        "telegramApi": {
+          "id": "hGGHeYQyTxb2HXTD",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KYSVR5zA04Ur5U1R5m4tyuM6GCN54MNQ72tSp8iA6WQ",
+          "mode": "list",
+          "cachedResultName": "FAQ Knowledge Base",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KYSVR5zA04Ur5U1R5m4tyuM6GCN54MNQ72tSp8iA6WQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "FAQ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KYSVR5zA04Ur5U1R5m4tyuM6GCN54MNQ72tSp8iA6WQ/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        0
+      ],
+      "id": "fee55869-621d-4516-b2aa-237cea8279d0",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ObVG3eU4CnvbAbiV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all FAQ rows from Google Sheets\nconst faqItems = $input.all();\n\n// Get the user's original Telegram question\nconst userQuestion = $('Telegram Trigger').first().json.message.text\n  .toLowerCase()\n  .trim();\n\n// Levenshtein Distance\nfunction levenshtein(a, b) {\n  const matrix = Array.from(\n    { length: b.length + 1 },\n    () => Array(a.length + 1).fill(0)\n  );\n\n  for (let i = 0; i <= b.length; i++) {\n    matrix[i][0] = i;\n  }\n\n  for (let j = 0; j <= a.length; j++) {\n    matrix[0][j] = j;\n  }\n\n  for (let i = 1; i <= b.length; i++) {\n    for (let j = 1; j <= a.length; j++) {\n      if (b[i - 1] === a[j - 1]) {\n        matrix[i][j] = matrix[i - 1][j - 1];\n      } else {\n        matrix[i][j] = Math.min(\n          matrix[i - 1][j - 1] + 1, // substitution\n          matrix[i][j - 1] + 1,     // insertion\n          matrix[i - 1][j] + 1      // deletion\n        );\n      }\n    }\n  }\n\n  return matrix[b.length][a.length];\n}\n\n// Convert Levenshtein distance into a similarity score from 0 to 1\nfunction similarity(a, b) {\n  a = a.toLowerCase().trim();\n  b = b.toLowerCase().trim();\n\n  const maxLength = Math.max(a.length, b.length);\n\n  if (maxLength === 0) {\n    return 1;\n  }\n\n  const distance = levenshtein(a, b);\n\n  return 1 - distance / maxLength;\n}\n\n// Find the FAQ question with the highest similarity\nlet bestMatch = null;\nlet bestScore = 0;\n\nfor (const item of faqItems) {\n  const faqQuestion = item.json.question;\n\n  const score = similarity(userQuestion, faqQuestion);\n\n  if (score > bestScore) {\n    bestScore = score;\n    bestMatch = item.json;\n  }\n}\n\n// Return only the best match\nreturn [\n  {\n    json: {\n      user_question: userQuestion,\n      matched_question: bestMatch?.question || null,\n      matched_answer: bestMatch?.answer || null,\n      similarity_score: bestScore\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        0
+      ],
+      "id": "d023ad11-210f-400c-afef-cc248cf14bcd",
+      "name": "Calculate FAQ Similarity"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ed0cd52f-7134-4352-aa78-41ecfe0361e3",
+              "leftValue": "={{ $json.similarity_score }}",
+              "rightValue": 0.6,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        816,
+        0
+      ],
+      "id": "a66efb29-333a-4baa-bedc-0215b0acec28",
+      "name": "Check Similarity Threshold"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "={{ $json.matched_answer }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        -96
+      ],
+      "id": "04ecd0b2-04d8-4d1f-be17-98d2bb6794c6",
+      "name": "Send Matched FAQ Answer",
+      "webhookId": "c198504d-a6f4-43aa-a179-14c00945ff8e",
+      "credentials": {
+        "telegramApi": {
+          "id": "hGGHeYQyTxb2HXTD",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KYSVR5zA04Ur5U1R5m4tyuM6GCN54MNQ72tSp8iA6WQ",
+          "mode": "list",
+          "cachedResultName": "FAQ Knowledge Base",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KYSVR5zA04Ur5U1R5m4tyuM6GCN54MNQ72tSp8iA6WQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1371869692,
+          "mode": "list",
+          "cachedResultName": "Unanswered Questions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KYSVR5zA04Ur5U1R5m4tyuM6GCN54MNQ72tSp8iA6WQ/edit#gid=1371869692"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $now }}",
+            "user_question": "={{ $json.user_question }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user_question",
+              "displayName": "user_question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1040,
+        96
+      ],
+      "id": "7196059b-a353-4ca2-b983-17e87e0b25da",
+      "name": "Log Unanswered Question",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ObVG3eU4CnvbAbiV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "Sorry, I couldn't find a suitable answer to your question. Your question has been logged for review.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1264,
+        96
+      ],
+      "id": "a34be4c4-cb43-46da-969f-324d416219da",
+      "name": "Send Escalation Message",
+      "webhookId": "aad7050b-771d-4fb8-a920-79c11f7b5031",
+      "credentials": {
+        "telegramApi": {
+          "id": "hGGHeYQyTxb2HXTD",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "eb545572-3443-4207-8b90-53970f9e13aa",
+              "leftValue": "={{ $('Telegram Trigger').first().json.message.from.id }}",
+              "rightValue": 8695353492,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        368,
+        -224
+      ],
+      "id": "46b4c3f7-06f5-44a3-acd5-bcf00f2dbf1f",
+      "name": "Verify Admin"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const text = $('Telegram Trigger').first().json.message.text;\n\n// Remove the /addfaq command\nconst content = text.replace(/^\\/addfaq\\s*/i, '').trim();\n\n// Split question and answer using |\nconst parts = content.split('|');\n\nif (parts.length < 2) {\n  return {\n    json: {\n      valid: false,\n      error: 'Invalid format'\n    }\n  };\n}\n\nconst question = parts[0].trim();\nconst answer = parts.slice(1).join('|').trim();\n\nif (!question || !answer) {\n  return {\n    json: {\n      valid: false,\n      error: 'Question or answer is empty'\n    }\n  };\n}\n\nreturn {\n  json: {\n    valid: true,\n    question,\n    answer\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -304
+      ],
+      "id": "73403581-3ae0-4743-9667-d94305cb3a5a",
+      "name": "Parse New FAQ"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KYSVR5zA04Ur5U1R5m4tyuM6GCN54MNQ72tSp8iA6WQ",
+          "mode": "list",
+          "cachedResultName": "FAQ Knowledge Base",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KYSVR5zA04Ur5U1R5m4tyuM6GCN54MNQ72tSp8iA6WQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "FAQ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KYSVR5zA04Ur5U1R5m4tyuM6GCN54MNQ72tSp8iA6WQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "question": "={{ $json.question }}",
+            "answer": "={{ $json.answer }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "question",
+              "displayName": "question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "answer",
+              "displayName": "answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        -304
+      ],
+      "id": "38fce580-d317-4601-9e5b-be8fd9d9bb72",
+      "name": "Add New FAQ",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ObVG3eU4CnvbAbiV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "Did that answer your question?  Reply with /yes or /no.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1264,
+        -96
+      ],
+      "id": "ed4298bf-3d4c-4896-9217-4b8502fcd674",
+      "name": "Ask for Confirmation",
+      "webhookId": "b21934ae-4423-48b4-951b-c3a82cbdeb23",
+      "credentials": {
+        "telegramApi": {
+          "id": "hGGHeYQyTxb2HXTD",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/yes",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6d38da40-99d1-4868-b993-04a10b60e8a2"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Yes"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "55db15cc-85d5-4b8d-814e-d90ca453578f",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/no",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "No"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3528c08e-9960-4fc8-abbe-8f7ed3dad434",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/addfaq",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Add FAQ"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        -32
+      ],
+      "id": "21939616-9657-4313-b3ac-f7d1004c7fbb",
+      "name": "Route Telegram Message"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "Great! I'm glad I could help. 😊",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        -544
+      ],
+      "id": "08fd15b5-1abd-4747-b9a1-e48ca3b3232a",
+      "name": "Send Positive Confirmation",
+      "webhookId": "4a99c321-cbfd-4e9d-bf99-887b7af9d0c3",
+      "credentials": {
+        "telegramApi": {
+          "id": "hGGHeYQyTxb2HXTD",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "Sorry the answer wasn't helpful. Your feedback has been noted for further review.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        -352
+      ],
+      "id": "291f454c-4eb7-4103-826f-5be65ed0f2dc",
+      "name": "Send Negative Confirmation",
+      "webhookId": "998e6eb0-4698-46d4-ba61-e11bc31e09c7",
+      "credentials": {
+        "telegramApi": {
+          "id": "hGGHeYQyTxb2HXTD",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "MESSAGE ROUTING\n\nRoutes incoming Telegram messages:\n• /yes → Positive confirmation\n• /no → Negative confirmation\n• /addfaq → Admin FAQ creation\n• Other messages → FAQ similarity matching",
+        "height": 224,
+        "width": 304,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        -272
+      ],
+      "id": "5cb8df45-279d-4a00-9527-384e12c30b2f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "FAQ SIMILARITY MATCHING\n\n• Uses a generic Levenshtein Distance algorithm\n• Compares the user's message with all FAQ questions\n• Selects the FAQ with the highest similarity score\n• No question-specific hardcoded if/else logic\n• Similarity threshold: 0.60\n\nThreshold Trade-off:\n0.60 provides typo tolerance while reducing false matches.\nHigher thresholds may reject valid misspelled questions.\nLower thresholds may return unrelated FAQ answers.",
+        "height": 304,
+        "width": 496,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        288,
+        160
+      ],
+      "id": "6e389bc9-e4c3-4a72-91aa-6a16143a1ce7",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "SAFE FALLBACK & LOGGING\n\nIf the best similarity score is below 0.60:\n\n• The bot does NOT guess an answer\n• The unanswered question is logged to Google Sheets\n• The user receives an escalation message\n• Logged questions can later be reviewed and added to the FAQ knowledge base",
+        "height": 256,
+        "width": 400,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        272
+      ],
+      "id": "c56e7f72-e07d-4c8e-900c-37127957441d",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "LIVE FAQ MANAGEMENT — BONUS\n\nAdmin command:\n/addfaq Question | Answer\n\n• Admin identity is verified before adding data\n• The command is parsed generically\n• New question/answer pairs are appended to Google Sheets\n• No workflow code changes are required\n• Newly added FAQs become immediately available for matching",
+        "height": 256,
+        "width": 544,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        448,
+        -576
+      ],
+      "id": "b4f3e8f4-51e2-406d-9862-e06e8a0c2997",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "FOLLOW-UP CONFIRMATION — BONUS\n\nAfter a successful FAQ match:\n\n• The bot asks: “Did that answer your question?”\n• /yes → Sends a positive confirmation\n• /no → Acknowledges that the answer was not helpful\n• Confirmation commands are routed separately from FAQ matching",
+        "height": 208,
+        "width": 576,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -320
+      ],
+      "id": "f1a16709-1a0a-4ec1-9a0f-3c8ef3d78063",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Route Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Calculate FAQ Similarity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate FAQ Similarity": {
+      "main": [
+        [
+          {
+            "node": "Check Similarity Threshold",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Similarity Threshold": {
+      "main": [
+        [
+          {
+            "node": "Send Matched FAQ Answer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Unanswered Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Unanswered Question": {
+      "main": [
+        [
+          {
+            "node": "Send Escalation Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Admin": {
+      "main": [
+        [
+          {
+            "node": "Parse New FAQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse New FAQ": {
+      "main": [
+        [
+          {
+            "node": "Add New FAQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Matched FAQ Answer": {
+      "main": [
+        [
+          {
+            "node": "Ask for Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Send Positive Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Negative Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Verify Admin",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "65033971-1467-4135-a88f-a0191de1241c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b1b0fd02aba1b67273027ec8d4abef5e82e50b15df665a330a998c14f4a9dd1e"
+  },
+  "nodeGroups": [],
+  "id": "DRyvhZhFMXyHPvpa",
+  "tags": []
+}
