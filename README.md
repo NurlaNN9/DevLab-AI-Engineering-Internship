@@ -36,9 +36,9 @@ The workflow:
 - Handles invalid input, AI failures, and external API failures
 - Sends an admin notification for Technical tickets
 
-The complete implementation is available in:
+Project directory:
 
-[`Required-Tasks/Customer-Support-Ticket-Bot/`](./Required-Tasks/Customer-Support-Ticket-Bot/)
+`Required-Tasks/Customer-Support-Ticket-Bot/`
 
 ---
 
@@ -60,9 +60,9 @@ The workflow:
 - Supports the `/digest` command for manual execution
 - Includes a dynamic weather image/icon
 
-The complete implementation is available in:
+Project directory:
 
-[`Bonus-Tasks/Daily-Personal-Digest-Bot/`](./Bonus-Tasks/Daily-Personal-Digest-Bot/)
+`Bonus-Tasks/Daily-Personal-Digest-Bot/`
 
 ---
 
@@ -88,20 +88,18 @@ Bonus functionality includes:
 - Threshold tuning for typo tolerance
 - Follow-up confirmation using `/yes` and `/no`
 
-The complete implementation is available in:
+Project directory:
 
-[`Bonus-Tasks/FAQ-Bot/`](./Bonus-Tasks/FAQ-Bot/)
+`Bonus-Tasks/FAQ-Bot/`
 
 ---
 
 ## Week 01 Completed Work
 
-Week 01 includes:
-
 - **1 Required Task** — Customer Support Ticket Bot
 - **2 Optional Tasks** — Daily Personal Digest Bot and FAQ Bot
-- All required workflow functionality
-- Bonus features implemented for the optional tasks
+- Required workflow functionality completed
+- Optional bonus features implemented
 - Exported n8n workflow JSON files
 - Testing and execution evidence
 - Screenshots
