@@ -1,87 +1,316 @@
-# Week 02 — Handwritten Digit Classification (CNN vs MLP)
+# Handwritten Digit Classifier with a CNN (MNIST)
 
-This project trains a convolutional neural network (CNN) and a multilayer perceptron (MLP) from scratch to recognize handwritten digits from the MNIST dataset. I compare the models using the same data split and training settings, then test the CNN on five handwritten images I created myself.
+A handwritten digit classification project developed as the **Week 02 Required Task** for the DevLab AI Engineering Internship.
 
-## Dataset and training
+The project uses **PyTorch**, **Torchvision**, and the **MNIST dataset** to train a convolutional neural network (CNN) from scratch, compare it against a multilayer perceptron (MLP), and classify handwritten digits created outside MNIST.
 
-MNIST contains 70,000 grayscale images of digits 0–9. Each image is 28 × 28 pixels. `transforms.ToTensor()` converts pixel values to the range [0, 1].
+## Project Overview
 
-- Training: 54,000 images
-- Validation: 6,000 images
-- Test: 10,000 images, kept separate during training
-- Batch size: 64
-- Epochs: 5
-- Optimizer: Adam, learning rate 0.001
-- Loss: CrossEntropyLoss
+The project focuses on training and evaluating neural networks for handwritten digit classification.
 
-Both the original CNN and MLP use the same train/validation/test split, epochs, optimizer and learning rate. The models start with randomly initialized weights; no pretrained model is used.
+Two models are developed from scratch:
 
-## Model architectures
+- Convolutional Neural Network (CNN)
+- Multilayer Perceptron (MLP)
 
-### CNN
+Both models are trained using the same dataset splits, number of epochs, optimizer, and learning rate.
 
-| Layer | Output shape | Purpose |
+The trained CNN is then evaluated on the MNIST test dataset and five handwritten digit images created separately.
+
+Additional experiments explore image preprocessing, data augmentation, and learned convolutional filters.
+
+## Model Architecture
+
+```text
+MNIST Dataset
+       │
+       ▼
+Data Normalization
+       │
+       ▼
+Train / Validation / Test Split
+       │
+       ├────────────────────────────┐
+       │                            │
+       ▼                            ▼
+   CNN Model                    MLP Model
+       │                            │
+       ▼                            ▼
+Convolution + ReLU             Flatten
+       │                            │
+       ▼                            ▼
+   Max Pooling               Dense Layers
+       │                            │
+       ▼                            │
+Convolution + ReLU                  │
+       │                            │
+       ▼                            │
+   Max Pooling                      │
+       │                            │
+       ▼                            │
+  Dense Layers                      │
+       │                            │
+       └──────────────┬─────────────┘
+                      │
+                      ▼
+             Model Evaluation
+                      │
+                      ▼
+             CNN Confusion Matrix
+                      │
+                      ▼
+          Custom Handwriting Test
+                      │
+                      ▼
+          Preprocessing Comparison
+```
+
+### CNN Architecture
+
+The CNN contains two convolution and pooling blocks followed by fully connected layers.
+
+| Layer | Output Shape | Purpose |
 |---|---|---|
 | Input | 1 × 28 × 28 | Grayscale image |
-| Conv2d (1 → 32, 3 × 3) + ReLU | 32 × 28 × 28 | Learn local patterns |
-| MaxPool2d (2 × 2) | 32 × 14 × 14 | Reduce spatial size |
-| Conv2d (32 → 64, 3 × 3) + ReLU | 64 × 14 × 14 | Learn more visual features |
-| MaxPool2d (2 × 2) | 64 × 7 × 7 | Reduce spatial size |
+| Conv2D + ReLU | 32 × 28 × 28 | Learn local visual patterns |
+| MaxPool2D | 32 × 14 × 14 | Reduce spatial dimensions |
+| Conv2D + ReLU | 64 × 14 × 14 | Learn more complex features |
+| MaxPool2D | 64 × 7 × 7 | Reduce spatial dimensions |
 | Flatten | 3136 | Prepare features for dense layers |
-| Linear (3136 → 128) + ReLU | 128 | Combine learned features |
-| Linear (128 → 10) | 10 | Scores for digits 0–9 |
+| Linear + ReLU | 128 | Combine learned features |
+| Linear | 10 | Classification scores for digits 0–9 |
 
-### MLP baseline
+### MLP Architecture
 
-The MLP flattens each image into 784 values, then uses fully connected layers: **784 → 128 → 64 → 10**, with ReLU between the hidden layers. It has no convolution or pooling layers.
+The MLP processes flattened images using fully connected layers:
 
-## Results
+```text
+Input Image (28 × 28)
+        │
+        ▼
+      Flatten
+        │
+        ▼
+   784 Features
+        │
+        ▼
+ Linear (784 → 128)
+        │
+        ▼
+       ReLU
+        │
+        ▼
+ Linear (128 → 64)
+        │
+        ▼
+       ReLU
+        │
+        ▼
+ Linear (64 → 10)
+        │
+        ▼
+  Predicted Digit
+```
 
-| Model | Final validation accuracy | Test accuracy |
+Unlike the CNN, the MLP does not use convolution or pooling layers.
+
+## Features
+
+- MNIST dataset loading through Torchvision
+- Pixel normalization to the [0, 1] range
+- Explicit training, validation, and test splits
+- CNN architecture with two convolution and pooling blocks
+- Fully connected MLP baseline
+- Training from random initialization without pretrained weights
+- Fair model comparison under identical training conditions
+- Training and validation loss tracking
+- Training and validation accuracy tracking
+- Performance visualization using Matplotlib
+- CNN confusion matrix
+- Classification of five custom handwritten digits
+- Original and improved image preprocessing
+- Model saving and reloading
+- Inference without retraining
+- Data augmentation experiment
+- Convolutional filter visualization
+
+## Dataset and Training
+
+The project uses the **MNIST handwritten digit dataset**, containing 70,000 grayscale images of digits from 0 to 9.
+
+Each image has a resolution of 28 × 28 pixels.
+
+Images are converted into tensors using `transforms.ToTensor()`, which scales pixel values from 0–255 to the [0, 1] range.
+
+### Dataset Split
+
+| Dataset | Images |
+|---|---:|
+| Training | 54,000 |
+| Validation | 6,000 |
+| Test | 10,000 |
+
+The original MNIST training dataset is divided into separate training and validation datasets.
+
+The official MNIST test dataset is kept separate for final evaluation.
+
+### Training Configuration
+
+| Parameter | Value |
+|---|---|
+| Framework | PyTorch |
+| Epochs | 5 |
+| Batch Size | 64 |
+| Learning Rate | 0.001 |
+| Optimizer | Adam |
+| Loss Function | CrossEntropyLoss |
+
+Both the CNN and MLP use the same training and validation datasets, epoch count, optimizer, and learning rate.
+
+## Model Performance
+
+Both models were evaluated on the MNIST test dataset after training.
+
+| Model | Final Validation Accuracy | Test Accuracy |
 |---|---:|---:|
 | CNN | 98.58% | 98.82% |
 | MLP | 96.68% | 97.31% |
-| CNN + augmentation | 98.82% | 99.01% |
+| CNN + Augmentation | 98.82% | 99.01% |
 
-The notebook includes training/validation loss and accuracy curves for the CNN and MLP, plus a CNN confusion matrix. The most frequent directional error was **8 predicted as 9**, occurring **10 times**. One possible explanation is that some handwritten 8s have an unclear lower loop and look similar to 9s.
+The original CNN achieved **98.82% test accuracy**, compared to **97.31%** for the MLP.
 
-## My own handwritten digits
+The CNN performed better on the MNIST test dataset by **1.51 percentage points**.
 
-I created five images outside MNIST: `digit_0.png`, `digit_2.png`, `digit_4.png`, `digit_6.png` and `digit_9.png`.
+The augmented CNN achieved the highest test accuracy in this experiment, reaching **99.01%**.
 
-The first preprocessing method converted the images to grayscale, inverted them to match MNIST's light digits on a dark background, resized the full images to 28 × 28 and converted them to tensors. The CNN predicted **2/5 correctly (40%)**.
+## Confusion Matrix
 
-I then improved preprocessing by cropping the empty background, resizing each digit to fit within 20 × 20 while keeping its aspect ratio, and centering it on a black 28 × 28 canvas. With the **same model and same five images**, the CNN predicted **5/5 correctly (100%)**. This is only a five-image experiment, not a general real-world accuracy estimate.
+A confusion matrix was generated using the original CNN's predictions on the MNIST test dataset.
 
-## Extra experiments
+The CNN correctly classified **9,882 out of 10,000 images**.
 
-- **First-layer filters:** Visualized the 32 learned 3 × 3 filters in the first convolutional layer.
-- **Data augmentation:** Trained a separate CNN with random rotations up to 10° and horizontal/vertical shifts up to 10% of image size. The validation and test datasets were not augmented. The augmented CNN achieved **99.01% test accuracy**.
+The most frequent directional classification error was:
 
-## Run the notebook
+| Actual Digit | Predicted Digit | Mistakes |
+|---|---|---:|
+| 8 | 9 | 10 |
 
-The notebook uses paths relative to its working directory. For Google Colab, upload the contents of this task folder (or the Week-02 ZIP) and set the working directory to `Week-02/Required-Tasks/Handwritten-Digit-Classifier` before running cells. If you upload the ZIP into Colab's `/content`, run:
+One possible explanation is that some handwritten 8s have an unclear lower loop, making them visually similar to 9s.
 
-```python
-!unzip -q Week-02.zip -d /content
-%cd /content/Week-02/Required-Tasks/Handwritten-Digit-Classifier
-```
+The confusion matrix and its interpretation are included in the notebook.
 
-Open `Week02_MNIST_CNN_vs_MLP.ipynb` and run the cells in order. MNIST downloads automatically into `./data/`. GPU is optional. The notebook saves the original CNN to `models/cnn_mnist.pth` and reloads it into a new model instance. The five custom images are read from `handwritten-digits/`. You can also load the included weights directly for inference without running the training cells, provided you define the `CNN` class and preprocessing function first.
+## Custom Handwriting Test
 
-Libraries: `torch`, `torchvision`, `numpy`, `matplotlib`, `scikit-learn`, `Pillow`, `pandas`.
+The trained CNN was tested on five handwritten digit images created outside MNIST.
 
-## Project files
+The images contain the following digits:
+
+**0, 2, 4, 6, and 9**
+
+These images were not used during model training.
+
+### Original Preprocessing
+
+The original preprocessing method:
+
+- Converts the image to grayscale
+- Inverts the colors to match MNIST
+- Resizes the entire image to 28 × 28 pixels
+- Converts the processed image into a tensor
+
+The CNN initially predicted **2 out of 5 digits correctly (40%)**.
+
+### Improved Preprocessing
+
+The preprocessing was improved by:
+
+- Cropping the empty background
+- Resizing the digit to fit within 20 × 20 pixels
+- Preserving the digit's aspect ratio
+- Centering the digit on a black 28 × 28 canvas
+
+### Preprocessing Results
+
+| Preprocessing | Correct Predictions | Accuracy |
+|---|---:|---:|
+| Original | 2/5 | 40% |
+| Improved | 5/5 | 100% |
+
+The same CNN and the same five images were used in both tests.
+
+**The model was not retrained.**
+
+This experiment demonstrates how image preprocessing can affect classification results.
+
+However, five images are a small sample, so the 100% result does not represent general accuracy on all real-world handwriting.
+
+## Model Persistence
+
+The trained CNN weights were saved using PyTorch.
+
+The saved weights were then loaded into a new CNN instance to perform inference without retraining.
+
+The model is available in:
+
+`models/cnn_mnist.pth`
+
+## Additional Experiments
+
+### Data Augmentation
+
+A separate CNN was trained using augmented MNIST training images.
+
+The augmentation included:
+
+- Random rotations of up to 10 degrees
+- Horizontal shifts of up to 10%
+- Vertical shifts of up to 10%
+
+The validation and test datasets were not augmented.
+
+The augmented CNN achieved **99.01% test accuracy**, compared to **98.82%** for the original CNN.
+
+### Convolutional Filter Visualization
+
+The learned filters from the first convolutional layer were extracted and visualized.
+
+The first convolutional layer contains:
+
+- 32 filters
+- 1 input channel
+- 3 × 3 filter dimensions
+
+The visualization shows different weight patterns learned during training.
+
+These filters can help the CNN detect simple visual features such as lines and edges.
+
+## Technologies Used
+
+- Python
+- PyTorch
+- Torchvision
+- NumPy
+- Pandas
+- Matplotlib
+- scikit-learn
+- Pillow
+- Google Colab
+- Git & GitHub
+
+## Project Files
 
 ```text
 Handwritten-Digit-Classifier/
+│
 ├── README.md
-├── REQUIRED-TASK.md
 ├── Week02_MNIST_CNN_vs_MLP.ipynb
+│
 ├── documentation/
 │   └── EXPERIMENT-NOTES.md
+│
 ├── models/
 │   └── cnn_mnist.pth
+│
 └── handwritten-digits/
     ├── digit_0.png
     ├── digit_2.png
@@ -90,4 +319,51 @@ Handwritten-Digit-Classifier/
     └── digit_9.png
 ```
 
-The MNIST `data/` folder is generated by the notebook and is not included in the repository.
+The original task description is stored in:
+
+`../REQUIRED-TASK.md`
+
+The MNIST `data/` directory is generated automatically and is not included in the repository.
+
+## Testing
+
+The project was tested through several scenarios, including:
+
+- CNN training and validation
+- MLP training and validation
+- CNN and MLP test evaluation
+- Confusion matrix analysis
+- Model saving and reloading
+- Inference using saved model weights
+- Five custom handwritten digit predictions
+- Improved preprocessing comparison
+- Data augmentation comparison
+- Convolutional filter visualization
+
+The executed notebook contains the training results, plots, and prediction outputs.
+
+## Running the Project
+
+The project was developed using Google Colab.
+
+To reproduce the experiments:
+
+1. Open `Week02_MNIST_CNN_vs_MLP.ipynb` in Google Colab.
+2. Make the model weights and custom handwritten images available in the working directory.
+3. Run the notebook cells in order.
+
+MNIST downloads automatically through Torchvision.
+
+The saved CNN weights can also be loaded separately for inference without repeating the training process.
+
+## Project Documentation
+
+- [Original Required Task](../REQUIRED-TASK.md)
+- [Jupyter Notebook](Week02_MNIST_CNN_vs_MLP.ipynb)
+- [Experiment Notes](documentation/EXPERIMENT-NOTES.md)
+- [Custom Handwritten Images](handwritten-digits/)
+- [Saved CNN Model](models/cnn_mnist.pth)
+
+---
+
+**DevLab AI Engineering Internship — Week 02 Required Task**
