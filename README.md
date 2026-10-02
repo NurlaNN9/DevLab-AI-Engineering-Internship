@@ -2,7 +2,7 @@
 
 This repository contains my projects, workflows, assignments, experiments, and technical documentation completed during the **DevLab AI Engineering Internship**.
 
-The repository documents my progress through the internship and focuses on practical AI engineering, automation, APIs, machine learning, deep learning, computer vision, and AI-powered applications.
+The repository documents my progress through the internship and focuses on practical AI engineering, automation, APIs, machine learning, deep learning, computer vision, retrieval-augmented generation, and AI-powered applications.
 
 ## Repository Structure
 
@@ -24,8 +24,27 @@ DevLab-AI-Engineering-Internship/
 │   │       ├── handwritten-digits/
 │   │       ├── models/
 │   │       ├── Week02_MNIST_CNN_vs_MLP.ipynb
-│   │       ├── README.md
-│   │       └── REQUIRED-TASK.md
+│   │       └── README.md
+│   └── README.md
+│
+├── Week-03/
+│   ├── Required-Tasks/
+│   │   └── License-Plate-Detection-and-Recognition-Pipeline/
+│   │       ├── documentation/
+│   │       ├── models/
+│   │       ├── Week03_License_Plate_Detection_OCR.ipynb
+│   │       └── README.md
+│   └── README.md
+│
+├── Week-04/
+│   ├── Required-Tasks/
+│   │   ├── Document-QA-Assistant-with-RAG/
+│   │   │   ├── models/
+│   │   │   │   ├── numpy_rag.index
+│   │   │   │   └── chunks.pkl
+│   │   │   └── Week04_Document_QA_RAG.ipynb
+│   │   ├── REQUIRED-TASK.md
+│   │   └── README.md
 │   └── README.md
 │
 └── README.md
@@ -154,6 +173,115 @@ Project directory:
 
 ---
 
+## Week 03 — License Plate Detection and Recognition
+
+Week 03 focuses on building an end-to-end computer vision pipeline that combines **object detection** and **optical character recognition (OCR)**.
+
+### Required Task
+
+**License Plate Detection and Recognition Pipeline**
+
+The project combines **YOLOv8** and **EasyOCR** to detect license plates and recognize the text inside them.
+
+The pipeline:
+
+- Uses a labeled license plate dataset from Roboflow
+- Trains a YOLOv8n object detection model
+- Detects license plates in vehicle images
+- Crops detected plate regions
+- Applies OCR to the detected plates using EasyOCR
+- Cleans recognized plate text
+- Supports images containing multiple vehicles
+- Evaluates detection using IoU and YOLO validation metrics
+- Evaluates OCR using exact-match accuracy and Character Error Rate (CER)
+- Includes failure-case analysis
+
+#### Detection Performance
+
+| Metric | Result |
+|---|---:|
+| Precision | 93.7% |
+| Recall | 88.1% |
+| mAP@50 | 92.2% |
+| mAP@50-95 | 68.7% |
+| Mean Test IoU | 74.78% |
+
+#### OCR Evaluation
+
+OCR was evaluated using 22 manually transcribed test images.
+
+| Metric | Result |
+|---|---:|
+| Exact-Match Accuracy | 22.73% |
+| Mean CER | 0.7718 |
+
+The results demonstrate the difference between strong license plate localization and the more difficult task of accurately recognizing plate text under varying image conditions.
+
+Project directory:
+
+`Week-03/Required-Tasks/License-Plate-Detection-and-Recognition-Pipeline/`
+
+---
+
+## Week 04 — Retrieval-Augmented Generation
+
+Week 04 focuses on building a **Retrieval-Augmented Generation (RAG)** system that answers questions using information retrieved from a specific document set.
+
+The main objective is not only to build a working RAG pipeline, but also to verify that retrieval genuinely affects the generated answers.
+
+### Required Task
+
+**Document Q&A Assistant with RAG**
+
+The project uses the official **NumPy User Guide** as its document knowledge base.
+
+The system:
+
+- Extracts text from the source PDF
+- Splits the document into overlapping chunks
+- Generates local embeddings using Sentence-Transformers
+- Stores embeddings in a persistent FAISS vector index
+- Performs configurable top-k similarity search
+- Supplies only retrieved chunks to the LLM
+- Separates retrieved context from the user question in the prompt
+- Generates grounded answers using a local model through Ollama
+- Displays source chunk and page information
+- Handles questions outside the document set
+- Compares answers with and without retrieval
+- Evaluates retrieval separately from generation
+- Tests whether disabling retrieval changes the generated answers
+
+#### RAG Configuration
+
+| Component | Configuration |
+|---|---|
+| Knowledge Base | NumPy User Guide |
+| Chunk Size | 800 characters |
+| Chunk Overlap | 150 characters |
+| Total Chunks | 2363 |
+| Embedding Model | all-MiniLM-L6-v2 |
+| Vector Store | FAISS |
+| Generation Model | Qwen2.5 1.5B via Ollama |
+| Retrieval | Top-k similarity search |
+
+#### Retrieval Evaluation
+
+A labeled set of 10 question-to-expected-chunk pairs was used to evaluate retrieval independently from answer generation.
+
+| Metric | Result |
+|---|---:|
+| Hit Rate@3 | 100% |
+| Out-of-Scope Tests Correctly Declined | 2/2 |
+| Retrieval Gating Test | Answers changed when retrieval was disabled |
+
+The FAISS index and chunk metadata are persisted to disk so that the vector store can be loaded without rebuilding it on every run.
+
+Project directory:
+
+`Week-04/Required-Tasks/Document-QA-Assistant-with-RAG/`
+
+---
+
 ## Technologies & Tools
 
 Technologies used throughout the internship currently include:
@@ -164,11 +292,19 @@ Technologies used throughout the internship currently include:
 - **Torchvision** — MNIST dataset loading and image transformations
 - **CNN** — convolutional neural network for image classification
 - **MLP** — fully connected neural network baseline
-- **scikit-learn** — confusion matrix and classification evaluation
+- **YOLOv8** — license plate object detection
+- **EasyOCR** — optical character recognition
+- **Sentence-Transformers** — local text embedding generation
+- **all-MiniLM-L6-v2** — embedding model used for document retrieval
+- **FAISS** — vector storage and similarity search
+- **Qwen2.5 1.5B** — local language model used for grounded answer generation
+- **scikit-learn** — model evaluation and classification metrics
 - **NumPy** — numerical operations
 - **Pandas** — experiment results and comparison tables
 - **Matplotlib** — training curves and visualizations
-- **Pillow** — custom handwritten image preprocessing
+- **Pillow** — image preprocessing
+- **OpenCV** — computer vision and image processing
+- **PyPDF** — PDF text extraction
 - **Google Colab** — notebook execution and model training
 
 ### Automation & Integration
@@ -177,7 +313,7 @@ Technologies used throughout the internship currently include:
 - **JavaScript** — workflow logic and data processing
 - **Docker** — local service deployment
 - **Ollama** — local AI model execution
-- **Gemma 4** — local language model
+- **Gemma 4** — local language model used in Week 01
 - **Telegram Bot API** — user interaction
 - **Google Sheets API** — data storage and knowledge-base integration
 - **REST APIs** — external data integration
@@ -197,10 +333,14 @@ This repository is intended to:
 - Apply AI models to real automation workflows
 - Practice API and third-party service integration
 - Develop reliable workflow error handling
-- Explore retrieval and text-matching techniques
-- Build and evaluate machine learning models
-- Understand deep learning architectures through practical experiments
-- Practice computer vision and image preprocessing
+- Build and evaluate machine learning and deep learning models
+- Develop practical computer vision pipelines
+- Combine object detection with OCR
+- Explore vector embeddings and similarity search
+- Build Retrieval-Augmented Generation systems
+- Evaluate retrieval separately from generation
+- Understand and test LLM grounding
+- Handle out-of-scope questions without hallucination
 - Maintain reproducible project documentation
 - Track the development of increasingly advanced AI systems
 
@@ -212,6 +352,8 @@ This repository is intended to:
 |---|---|---|
 | Week 01 | AI Automation with n8n | ✅ Completed |
 | Week 02 | Computer Vision with PyTorch | ✅ Completed |
+| Week 03 | Object Detection & OCR | ✅ Completed |
+| Week 04 | Retrieval-Augmented Generation | ✅ Completed |
 
 Additional weeks and projects will be added as the internship progresses.
 
@@ -221,4 +363,4 @@ Additional weeks and projects will be added as the internship progresses.
 
 This repository was created as part of the **DevLab AI Engineering Internship** and serves as a technical portfolio of the work completed throughout the program.
 
-Each project directory contains its own detailed README, implementation files, supporting resources, and testing evidence.
+Each project directory contains its own implementation files, supporting resources, evaluation results, and documentation.
