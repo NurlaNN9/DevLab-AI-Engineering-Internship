@@ -1,43 +1,43 @@
 # Real-Time Pen/Pencil Detector
 
-YOLOv8n tabanlı, webcam görüntüsünde kalem tespiti projesi. Eğitim ve test akışı `real-time-pen-pencil-detector.ipynb` dosyasındadır; canlı kamera uygulaması `webcam_detector.py` dosyasıdır.
+A YOLOv8n-based project for detecting pens or pencils in a webcam stream. The training and evaluation workflow is in `real-time-pen-pencil-detector.ipynb`; the live camera application is `webcam_detector.py`.
 
-## Klasörler ve dosyalar
+## Folders and Files
 
-- `real-time-pen-pencil-detector.ipynb`: Veri kümesini hazırlama, YOLOv8n ince ayarı ve test değerlendirmesi.
-- `webcam_detector.py`: OpenCV ile canlı webcam tahmini; kutu, sınıf güveni, canlı FPS ve değiştirilebilir eşik gösterir.
-- `models/best.pt`: Eğittiğiniz model ağırlığını buraya kendiniz ekleyin. Büyük dosya ZIP'e dahil edilmemiştir.
-- `dataset/`: Veri kümesi dosyalarını buraya yerleştirin; büyük veri ZIP'e dahil edilmemiştir.
-- `REQUIRED-TASK.md`: Görev tanımının özgün metni.
+- `real-time-pen-pencil-detector.ipynb`: Prepares the dataset, fine-tunes YOLOv8n, and evaluates the model.
+- `webcam_detector.py`: Runs live webcam inference with OpenCV and displays bounding boxes, class confidence, live FPS, and an adjustable confidence threshold.
+- `models/best.pt`: Place your trained model weights here. The large file is not included in the ZIP.
+- `dataset/`: Place the dataset files here. The dataset is not included in the ZIP.
+- `REQUIRED-TASK.md`: Contains the original task description.
 
-## Çalıştırma
+## Run the Detector
 
-Python 3.10 veya 3.11 önerilir. Proje klasöründe terminal açıp bağımlılıkları kurun:
+Python 3.10 or 3.11 is recommended. Open a terminal in the project folder and install the dependencies:
 
 ```bash
 pip install ultralytics opencv-python
 ```
 
-Eğitilmiş `best.pt` dosyasını `models/best.pt` konumuna koyun ve başlatın:
+Place the trained `best.pt` file at `models/best.pt`, then run:
 
 ```bash
 python webcam_detector.py
 ```
 
-`Q` ile çıkın. `+` veya `=` güven eşiğini yükseltir, `-` düşürür. Kamera açılmazsa uygulama varsayılan kamera API'sine geçer; gerekirse `webcam_detector.py` içindeki `CAMERA_INDEX` değerini değiştirin. Kod CPU üzerinde çalışacak şekilde ayarlanmıştır.
+Press `Q` to quit. Press `+` or `=` to raise the confidence threshold, and `-` to lower it. If the webcam does not open, the application falls back to the default camera API. If needed, change `CAMERA_INDEX` in `webcam_detector.py`. The code is configured to run on the CPU.
 
-## Veri kümesi ve atıf
+## Dataset and Attribution
 
-Notebook, ZIP biçimindeki YOLO veri kümesini `/content` dizinine yüklemenizi ister. Veri kümesinin lisansını ve kaynağını burada belirtin; dataset dosyaları bu teslim ZIP'ine dahil değildir. Notebook, boş veya eksik etiketleri inceler, tek sınıflı eğitim düzenini hazırlar ve `best.pt` ağırlığını test kümesinde değerlendirir.
+The notebook prompts you to upload a YOLO-format dataset ZIP to `/content`. Specify the dataset source and license here; the dataset files are not included in the project ZIP. The notebook checks for empty or missing labels, prepares the single-class training setup, and evaluates `best.pt` on the test split.
 
-## Değerlendirme notları
+## Evaluation Notes
 
-Notebook içindeki kayıtlı test özeti 40 test görseli için Precision 0.9508, Recall 0.9104, mAP@50 0.9695 ve mAP@50–95 0.6962 olarak verilmiştir. Notebook, bazı anotasyonların eksik olabileceğini, test kümesinin küçük olduğunu, arka plan-only örnek bulunmadığını ve kalem türlerinin (pencil) doğrulanmadığını da not eder.
+The notebook reports the following results on 40 test images: Precision 0.9508, Recall 0.9104, mAP@50 0.9695, and mAP@50–95 0.6962. It also notes that some annotations may be incomplete, the test split is small, it contains no background-only examples, and pencil detection has not been verified.
 
-Notebook'ta üç canlı test koşulu için 15.6, 15.2 ve 14.8 FPS değerleri yer alıyor. Bunlar bu ortamda bağımsız olarak doğrulanmadı; kendi bilgisayarında tekrar ölçüp sonuçları buna göre güncelle. FPS donanım, çözünürlük ve kamera koşullarına göre değişir. Farklı ışık/arka plan testlerini gerçekten yaptıktan sonra gözlemlerini ekle.
+The notebook lists FPS values of 15.6, 15.2, and 14.8 for three live-test conditions. These values have not been independently verified; measure them again on your own computer and update the results accordingly. FPS varies with hardware, resolution, and camera conditions. Add observations from lighting and background tests you have actually performed.
 
-## Sınırlamalar
+## Limitations
 
-- Tek özel sınıf hedeflenmiştir; modelinizin sınıf adını ve etiket kapsamını veri kümenizle doğrulayın.
-- Statik test metrikleri, yeni ortamlarda webcam başarısını garanti etmez.
-- Bu teslimde ağırlık dosyası ve veri kümesi boyut nedeniyle bulunmaz; kendi dosyalarınızı belirtilen klasörlere ekleyin.
+- The model targets one custom class. Verify the class name and label coverage against your dataset.
+- Static test metrics do not guarantee webcam performance in new environments.
+- The model weights and dataset are not included in this delivery because of their size. Add your own files to the specified folders.
