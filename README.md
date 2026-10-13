@@ -47,6 +47,19 @@ DevLab-AI-Engineering-Internship/
 │   │   └── README.md
 │   └── README.md
 │
+├── Week-05/
+│   ├── Required-Tasks/
+│   │   └── Real-Time-Pen-Pencil-Detector/
+│   │       ├── dataset/
+│   │       │   └── README.md
+│   │       ├── models/
+│   │       │   └── best.pt
+│   │       ├── real-time-pen-pencil-detector.ipynb
+│   │       ├── webcam_detector.py
+│   │       ├── README.md
+│   │       └── REQUIRED-TASK.md
+│   └── README.md
+│
 └── README.md
 ```
 
@@ -282,6 +295,70 @@ Project directory:
 
 ---
 
+## Week 05 — Real-Time Computer Vision
+
+Week 05 focuses on building a real-time computer vision application that processes live webcam frames continuously rather than making predictions on individual static images.
+
+The main objective was to fine-tune a lightweight custom object detector and evaluate the trade-offs between detection quality, inference speed, confidence thresholds, lighting, background complexity, and camera conditions.
+
+### Required Task
+
+**Real-Time Pen/Pencil Detector from Webcam Feed**
+
+This project fine-tunes **YOLOv8n** for a custom pen/pencil detection class and runs the trained model on a live webcam stream using OpenCV.
+
+The pipeline:
+
+- Uses a labeled pen/pencil object-detection dataset in YOLO format.
+- Inspects dataset folders, class names, labels, and train/validation/test splits.
+- Checks for empty and missing labels before training.
+- Prepares a cleaned single-class dataset for model training.
+- Fine-tunes YOLOv8n from pretrained weights.
+- Saves the best model checkpoint as `best.pt`.
+- Evaluates the best checkpoint on a held-out test split.
+- Runs continuous inference on webcam frames with OpenCV.
+- Draws bounding boxes, predicted labels, and confidence scores live.
+- Measures and displays FPS during webcam inference.
+- Supports interactive confidence-threshold adjustment to help reduce false positives.
+- Documents live testing across normal light, low light, and cluttered-background conditions.
+
+#### Model Evaluation
+
+The best model checkpoint was evaluated on 40 held-out test images.
+
+| Metric | Test Result |
+|---|---:|
+| Precision | 0.9508 |
+| Recall | 0.9104 |
+| mAP@50 | 0.9695 |
+| mAP@50–95 | 0.6962 |
+
+#### Live Webcam Evaluation
+
+The notebook records the following FPS values for live webcam inference:
+
+| Condition | Reported FPS | Detection |
+|---|---:|---|
+| Normal light, plain background | 15.6 | Pen detected |
+| Low light | 15.2 | Pen detected |
+| Cluttered background | 14.8 | Pen detected |
+
+The reported FPS values should be re-measured on the final demonstration computer because performance varies with hardware, camera resolution, lighting, and background conditions.
+
+#### Limitations
+
+- The held-out test set contains 40 images, so it is relatively small.
+- Some source annotations may be incomplete.
+- The test split does not include background-only images.
+- Pencil detection requires further verification with additional examples.
+- Static-image evaluation metrics do not guarantee equivalent performance under new live webcam conditions.
+
+Project directory:
+
+`Week-05/Required-Tasks/Real-Time-Pen-Pencil-Detector/`
+
+---
+
 ## Technologies & Tools
 
 Technologies used throughout the internship currently include:
@@ -292,7 +369,7 @@ Technologies used throughout the internship currently include:
 - **Torchvision** — MNIST dataset loading and image transformations
 - **CNN** — convolutional neural network for image classification
 - **MLP** — fully connected neural network baseline
-- **YOLOv8** — license plate object detection
+- **YOLOv8** — license plate detection and real-time pen/pencil object detection
 - **EasyOCR** — optical character recognition
 - **Sentence-Transformers** — local text embedding generation
 - **all-MiniLM-L6-v2** — embedding model used for document retrieval
@@ -303,7 +380,7 @@ Technologies used throughout the internship currently include:
 - **Pandas** — experiment results and comparison tables
 - **Matplotlib** — training curves and visualizations
 - **Pillow** — image preprocessing
-- **OpenCV** — computer vision and image processing
+- **OpenCV** — image processing, webcam capture, drawing, and real-time inference display
 - **PyPDF** — PDF text extraction
 - **Google Colab** — notebook execution and model training
 
@@ -336,6 +413,8 @@ This repository is intended to:
 - Build and evaluate machine learning and deep learning models
 - Develop practical computer vision pipelines
 - Combine object detection with OCR
+- Build and evaluate real-time computer vision applications
+- Measure real-time inference speed and latency trade-offs
 - Explore vector embeddings and similarity search
 - Build Retrieval-Augmented Generation systems
 - Evaluate retrieval separately from generation
@@ -354,6 +433,7 @@ This repository is intended to:
 | Week 02 | Computer Vision with PyTorch | ✅ Completed |
 | Week 03 | Object Detection & OCR | ✅ Completed |
 | Week 04 | Retrieval-Augmented Generation | ✅ Completed |
+| Week 05 | Real-Time Computer Vision | ✅ Completed |
 
 Additional weeks and projects will be added as the internship progresses.
 
