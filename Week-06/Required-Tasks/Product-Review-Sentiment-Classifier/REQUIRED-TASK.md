@@ -1,52 +1,48 @@
 # Product Review Sentiment Classifier
 
-**svgSubmit task**
+Build a sentiment classifier for real product and service reviews that predicts positive, negative, or neutral sentiment. Compare a classical machine learning baseline against a pretrained or fine-tuned transformer to demonstrate the trade-off between simplicity and performance.
 
-ProgrammingRequired
+The main assessment criterion is a genuine comparison using identical data splits, not accuracy alone.
 
-# Product Review Sentiment Classifier
+## Learning Objectives
 
-Build a sentiment classifier for real product/service reviews that outputs positive/negative/neutral, and compare a classical ML baseline against a pretrained or fine-tuned transformer to show the trade-off between simplicity and performance. The genuine model comparison, on identical data splits, is the assessed skill - not accuracy alone.
+- Clean and preprocess raw review text appropriately for the chosen method.
+- Build a classical ML baseline using TF-IDF and Logistic Regression or SVM, trained on labeled review data.
+- Use a pretrained or fine-tuned transformer for the same classification task.
+- Evaluate both models using precision, recall, and F1-score for each class, not just overall accuracy, since review sentiment is often imbalanced.
+- Analyze misclassified examples to identify systematic weaknesses, such as sarcasm, negation, or mixed sentiment.
+- Justify which model to deploy based on accuracy, latency, and resource trade-offs.
 
-## Learning objectives
+## Must-Have Features
 
-- Clean and preprocess raw review text appropriately for the chosen method
-- Build a classical ML baseline (TF-IDF plus Logistic Regression/SVM) trained on labeled review data
-- Use a pretrained or fine-tuned transformer for the same classification task
-- Evaluate both models with precision/recall/F1 per class, not accuracy alone, since review sentiment is often imbalanced
-- Analyze misclassified examples to identify a systematic weakness (e.g. sarcasm, negation, mixed sentiment)
-- Justify which model you would actually deploy given accuracy vs. latency/resource trade-offs
+- **Real Dataset:** Use a real-world review dataset, such as Amazon, Yelp, IMDb, or a small self-scraped dataset with permission, containing at least 1,000 labeled examples.
+- **Classical Baseline:** Train and evaluate a TF-IDF-based classical classifier.
+- **Transformer Model:** Train or evaluate a pretrained/fine-tuned transformer using the identical train/test split as the baseline.
+- **Per-Class Metrics:** Report precision, recall, and F1-score for every sentiment class for both models, not just overall accuracy.
+- **Class Imbalance Handling:** Measure the dataset's class distribution and apply at least one mitigation strategy: class weighting, resampling, or an explicit, reasoned decision to leave the imbalance unaddressed.
+- **Error Analysis:** Review at least five misclassified examples and provide a written hypothesis explaining why the model misclassified each one.
+- **Model Comparison Verdict:** Recommend which model to deploy for a specific hypothetical use case, such as real-time support triage or offline weekly reporting.
+- **Identical Data Splits:** Train and evaluate both models on exactly the same train/test split, using the same random seed or a saved split file. Mismatched splits invalidate the comparison and will be rejected.
 
-## Must-have features
+## Bonus Features
 
-- **Real Dataset** — A real-world review dataset (e.g. Amazon, Yelp, IMDb, or a small self-scraped set with permission) with at least 1,000 labeled examples.
-- **Classical Baseline** — TF-IDF plus a classical classifier trained and evaluated.
-- **Transformer Model** — A pretrained/fine-tuned transformer trained and evaluated on the identical train/test split as the baseline.
-- **Per-Class Metrics** — Precision/recall/F1 reported per sentiment class for both models, not just overall accuracy.
-- **Class Imbalance Handling** — The dataset's class imbalance is measured, and at least one mitigation (class weighting, resampling, or an explicit, reasoned decision to ignore it) is applied.
-- **Error Analysis** — At least 5 misclassified examples reviewed with a written hypothesis for each about why the model got it wrong.
-- **Model Comparison Verdict** — A written recommendation on which model to deploy for a stated hypothetical use case (e.g. real-time support triage vs. offline weekly reporting).
-- **Anti-Cheat: Identical Splits** — Both models must be trained/evaluated on the exact same train/test split (same random seed or saved split file). Mismatched splits invalidate the comparison and will be rejected.
+- Add a neutral class if the dataset supports it, and investigate whether including it affects binary classification performance.
+- Test both models on out-of-domain text, such as training on product reviews and testing on restaurant reviews, to evaluate generalization.
+- Implement a simple confidence-calibration check to determine whether high-confidence predictions are more likely to be correct.
+- Wrap the better-performing model in a small CLI or API for live testing.
 
-## Bonus features
+## Technical Requirements
 
-- Add a neutral class if the dataset supports it and check whether it hurts binary performance
-- Test both models on out-of-domain text (e.g. train on product reviews, test on restaurant reviews) to check generalization
-- Build a simple confidence-calibration check - are high-confidence predictions actually more often correct?
-- Wrap the better-performing model in a small CLI or API for live testing
+- **scikit-learn:** Required for the classical baseline.
+- **Hugging Face Transformers:** Use a free pretrained model, such as a DistilBERT sentiment model, or fine-tune your own model. Clearly state which approach and model were used.
+- **Sufficient Compute:** Google Colab's free-tier GPU is sufficient for the transformer. Full fine-tuning is not required if using a well-matched pretrained model, but this choice must be explicitly stated.
 
-## Technical requirements
+## Hugging Face Sentiment Analysis Quickstart
 
-- **scikit-learn** — For the classical baseline.
-- **Hugging Face Transformers** — A free pretrained model (e.g. a DistilBERT sentiment model) or your own fine-tune is accepted - state which was used.
-- **Sufficient compute for the transformer** — Google Colab's free-tier GPU is sufficient; a full fine-tune is not required if using a well-matched pretrained model, but this must be stated explicitly.
+A guide to running and fine-tuning transformer-based sentiment classifiers:
 
-## Hugging Face sentiment analysis quickstart
+[Hugging Face: Sentiment Analysis with Python](https://huggingface.co/blog/sentiment-analysis-python)
 
-A quickstart guide for running and fine-tuning transformer-based sentiment classifiers:
+## Mentor Reference Notes
 
-[https://huggingface.co/blog/sentiment-analysis-python](https://huggingface.co/blog/sentiment-analysis-python)
-
-## Mentor reference notes
-
-The common shortcut is reporting only overall accuracy on an imbalanced dataset - graders should specifically check for per-class F1 before accepting a submission.
+A common shortcut is reporting only overall accuracy on an imbalanced dataset. Submissions should specifically be checked for per-class F1-scores before acceptance.
