@@ -63,13 +63,10 @@ DevLab-AI-Engineering-Internship/
 ├── Week-06/
 │   ├── Required-Tasks/
 │   │   └── Product-Review-Sentiment-Classifier/
-│   │       ├── documentation/
-│   │       │   └── README.md
-│   │       ├── Week06_Product_Review_Sentiment_Classifier.ipynb
 │   │       ├── README.md
 │   │       ├── REQUIRED-TASK.md
-│   │       ├── requirements.txt
-│   │       └── .gitignore
+│   │       ├── Week06_Product_Review_Sentiment_Classifier.ipynb
+│   │       └── requirements.txt
 │   └── README.md
 │
 └── README.md
