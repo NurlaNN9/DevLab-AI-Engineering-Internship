@@ -60,6 +60,18 @@ DevLab-AI-Engineering-Internship/
 │   │       └── REQUIRED-TASK.md
 │   └── README.md
 │
+├── Week-06/
+│   ├── Required-Tasks/
+│   │   └── Product-Review-Sentiment-Classifier/
+│   │       ├── documentation/
+│   │       │   └── README.md
+│   │       ├── Week06_Product_Review_Sentiment_Classifier.ipynb
+│   │       ├── README.md
+│   │       ├── REQUIRED-TASK.md
+│   │       ├── requirements.txt
+│   │       └── .gitignore
+│   └── README.md
+│
 └── README.md
 ```
 
@@ -359,6 +371,92 @@ Project directory:
 
 ---
 
+## Week 06 — Product Review Sentiment Classification
+
+Week 06 focuses on sentiment classification for real customer reviews: building a classical machine-learning baseline, applying a pretrained transformer model, and comparing both approaches on identical data splits.
+
+The main objective is not only to measure overall accuracy, but to evaluate how each model performs on individual sentiment classes and to understand the trade-off between model simplicity, performance, latency, and resource usage.
+
+### Required Task
+
+**Product Review Sentiment Classifier**
+
+This project builds a sentiment classifier for real customer reviews and compares a classical machine-learning baseline with a pretrained transformer model.
+
+The classifier assigns one of three labels to each review:
+
+- Negative
+- Neutral
+- Positive
+
+The pipeline:
+
+- Uses the Yelp Review Full dataset from Hugging Face.
+- Converts 1–2 star reviews to negative, 3 star reviews to neutral, and 4–5 star reviews to positive.
+- Creates a balanced dataset with 9,000 training and 3,000 test examples.
+- Builds a TF-IDF + Logistic Regression classical baseline.
+- Applies class weighting for imbalance handling.
+- Uses the pretrained `cardiffnlp/twitter-roberta-base-sentiment-latest` transformer model.
+- Evaluates both models on the exact same train/test split.
+- Reports accuracy, macro F1-score, weighted F1-score, and per-class precision, recall, and F1-score.
+- Generates confusion matrices for both models.
+- Analyzes misclassified reviews and documents possible reasons for the errors.
+- Includes a confidence calibration check for transformer predictions.
+- Provides a deployment recommendation for real-time support triage and offline weekly reporting.
+
+#### Dataset Configuration
+
+| Component | Configuration |
+|---|---|
+| Dataset | Yelp Review Full |
+| Source | Hugging Face Datasets |
+| Sentiment Classes | Negative, Neutral, Positive |
+| Training Examples | 9,000 |
+| Test Examples | 3,000 |
+| Train Samples Per Class | 3,000 |
+| Test Samples Per Class | 1,000 |
+| Random Seed | 42 |
+
+#### Models
+
+| Model | Approach |
+|---|---|
+| Classical Baseline | TF-IDF + Logistic Regression |
+| Transformer Model | Pretrained `cardiffnlp/twitter-roberta-base-sentiment-latest` |
+| Fine-Tuning | Not performed; the pretrained transformer is used directly |
+| Imbalance Handling | Stratified balanced sampling and class weighting |
+| Evaluation Split | Identical train/test split for both models |
+
+#### Evaluation
+
+The notebook includes:
+
+- Accuracy
+- Macro F1-score
+- Weighted F1-score
+- Per-class precision, recall, and F1-score
+- Confusion matrices
+- Misclassified review analysis
+- Confidence calibration check
+
+#### Deployment Recommendation
+
+The transformer model is more suitable for offline weekly reporting, where stronger contextual understanding is more important than inference speed.
+
+The TF-IDF + Logistic Regression model is more suitable for real-time support triage, where low latency, simplicity, and low resource usage are more important.
+
+#### Bonus Features
+
+- Neutral sentiment class
+- Confidence calibration check
+- Live-testing function for individual reviews
+
+Project directory:
+
+`Week-06/Required-Tasks/Product-Review-Sentiment-Classifier/`
+
+---
+
 ## Technologies & Tools
 
 Technologies used throughout the internship currently include:
@@ -376,6 +474,11 @@ Technologies used throughout the internship currently include:
 - **FAISS** — vector storage and similarity search
 - **Qwen2.5 1.5B** — local language model used for grounded answer generation
 - **scikit-learn** — model evaluation and classification metrics
+- **Hugging Face Transformers** — pretrained transformer inference for sentiment classification
+- **Hugging Face Datasets** — Yelp Review Full dataset loading
+- **TF-IDF** — text feature extraction for the classical baseline
+- **Logistic Regression** — classical sentiment classification baseline
+- **cardiffnlp/twitter-roberta-base-sentiment-latest** — pretrained three-class sentiment model
 - **NumPy** — numerical operations
 - **Pandas** — experiment results and comparison tables
 - **Matplotlib** — training curves and visualizations
@@ -420,6 +523,10 @@ This repository is intended to:
 - Evaluate retrieval separately from generation
 - Understand and test LLM grounding
 - Handle out-of-scope questions without hallucination
+- Build and compare classical and transformer-based NLP models
+- Evaluate text classification models using per-class metrics
+- Analyze misclassified examples and model limitations
+- Understand accuracy, latency, and resource trade-offs in model deployment
 - Maintain reproducible project documentation
 - Track the development of increasingly advanced AI systems
 
@@ -434,6 +541,7 @@ This repository is intended to:
 | Week 03 | Object Detection & OCR | ✅ Completed |
 | Week 04 | Retrieval-Augmented Generation | ✅ Completed |
 | Week 05 | Real-Time Computer Vision | ✅ Completed |
+| Week 06 | Product Review Sentiment Classification | ✅ Completed |
 
 Additional weeks and projects will be added as the internship progresses.
 
